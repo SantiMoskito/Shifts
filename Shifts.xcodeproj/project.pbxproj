@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		269734211E02BE4300E7BCD5 /* CalendarCollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 269734201E02BE4300E7BCD5 /* CalendarCollectionCell.swift */; };
+		26BCC4AE1E0083BE00C522F3 /* CalendarCollectionCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26BCC4AD1E0083BE00C522F3 /* CalendarCollectionCollectionViewController.swift */; };
+		26BCC4B01E016A0D00C522F3 /* CollectionHeaderReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26BCC4AF1E016A0D00C522F3 /* CollectionHeaderReusableView.swift */; };
+		26BCC4B21E01A07B00C522F3 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26BCC4B11E01A07B00C522F3 /* Globals.swift */; };
+		26BCC4B41E02AC3600C522F3 /* CollectionFooterReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26BCC4B31E02AC3600C522F3 /* CollectionFooterReusableView.swift */; };
 		26CDE8961E0013DC00A65122 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26CDE8951E0013DC00A65122 /* AppDelegate.swift */; };
 		26CDE8981E0013DC00A65122 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26CDE8971E0013DC00A65122 /* ViewController.swift */; };
 		26CDE89B1E0013DC00A65122 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 26CDE8991E0013DC00A65122 /* Main.storyboard */; };
@@ -16,6 +21,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		269734201E02BE4300E7BCD5 /* CalendarCollectionCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalendarCollectionCell.swift; sourceTree = "<group>"; };
+		26BCC4AD1E0083BE00C522F3 /* CalendarCollectionCollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalendarCollectionCollectionViewController.swift; sourceTree = "<group>"; };
+		26BCC4AF1E016A0D00C522F3 /* CollectionHeaderReusableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionHeaderReusableView.swift; sourceTree = "<group>"; };
+		26BCC4B11E01A07B00C522F3 /* Globals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
+		26BCC4B31E02AC3600C522F3 /* CollectionFooterReusableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionFooterReusableView.swift; sourceTree = "<group>"; };
 		26CDE8921E0013DC00A65122 /* Shifts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shifts.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		26CDE8951E0013DC00A65122 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		26CDE8971E0013DC00A65122 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -56,9 +66,14 @@
 		26CDE8941E0013DC00A65122 /* Shifts */ = {
 			isa = PBXGroup;
 			children = (
+				26BCC4B11E01A07B00C522F3 /* Globals.swift */,
 				26CDE8951E0013DC00A65122 /* AppDelegate.swift */,
 				26CDE8971E0013DC00A65122 /* ViewController.swift */,
 				26CDE8991E0013DC00A65122 /* Main.storyboard */,
+				26BCC4B31E02AC3600C522F3 /* CollectionFooterReusableView.swift */,
+				26BCC4AF1E016A0D00C522F3 /* CollectionHeaderReusableView.swift */,
+				26BCC4AD1E0083BE00C522F3 /* CalendarCollectionCollectionViewController.swift */,
+				269734201E02BE4300E7BCD5 /* CalendarCollectionCell.swift */,
 				26CDE89F1E0013DC00A65122 /* Assets.xcassets */,
 				26CDE8A11E0013DC00A65122 /* LaunchScreen.storyboard */,
 				26CDE8A41E0013DC00A65122 /* Info.plist */,
@@ -140,9 +155,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				26BCC4AE1E0083BE00C522F3 /* CalendarCollectionCollectionViewController.swift in Sources */,
+				26BCC4B01E016A0D00C522F3 /* CollectionHeaderReusableView.swift in Sources */,
+				26BCC4B41E02AC3600C522F3 /* CollectionFooterReusableView.swift in Sources */,
 				26CDE8981E0013DC00A65122 /* ViewController.swift in Sources */,
 				26CDE89E1E0013DC00A65122 /* Shifts.xcdatamodeld in Sources */,
+				269734211E02BE4300E7BCD5 /* CalendarCollectionCell.swift in Sources */,
 				26CDE8961E0013DC00A65122 /* AppDelegate.swift in Sources */,
+				26BCC4B21E01A07B00C522F3 /* Globals.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,10 +285,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = SPSPB8C673;
 				INFOPLIST_FILE = Shifts/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = spm.bestApp4.Shifts;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -278,10 +300,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = SPSPB8C673;
 				INFOPLIST_FILE = Shifts/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = spm.bestApp4.Shifts;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -304,6 +328,7 @@
 				26CDE8A91E0013DC00A65122 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
