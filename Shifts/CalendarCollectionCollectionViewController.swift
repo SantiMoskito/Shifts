@@ -10,41 +10,24 @@ import UIKit
 import Foundation
 
 //Date of selected month
-var selectedDate = currentDate
-var dayDiff = 0
+var selectedDate = Date()
 var selectedDateComponents = DateComponents()
-var firstDayOfSelected = Date()
-var firstDayOfSelectedComponents = DateComponents()
+
+var dayDiff = 0
+var firstDateOfSelected = Date()
+var firstDateOfSelectedComponents = DateComponents()
 var indexOfSelected1st = 0
 
 
 class CalendarCollectionCollectionViewController: UICollectionViewController,UICollectionViewDelegateFlowLayout {
     
+    @IBOutlet var CollecionViewOT: UICollectionView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
-        print("SelectedDate: \(selectedDate)")
-        
-        selectedDateComponents = currentCalendar.dateComponents([.day, .month, .year, .weekday, .weekOfMonth, .weekOfYear], from: selectedDate)
-        
-        selectedDateComponents.day = 1
-        
-        firstDayOfSelected = currentCalendar.date(from:selectedDateComponents)!
-        print("firstdayofselected: \(firstDayOfSelected)")
-        
-        firstDayOfSelectedComponents = currentCalendar.dateComponents([.day, .month, .year, .weekday, .weekOfMonth, .weekOfYear], from: firstDayOfSelected)
-        
-        //index of 1st day of month in collection view
-        indexOfSelected1st = firstDayOfSelectedComponents.weekday!-currentCalendar.firstWeekday
-        
-        //for months starting on first cell (day 1), shift down to show one day from previous month
-        indexOfSelected1st = (indexOfSelected1st == 0) ? indexOfSelected1st + 7 : indexOfSelected1st
-        print("indexOfSelected1st: \(indexOfSelected1st)")
-
         // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
+        self.clearsSelectionOnViewWillAppear = true
 
         // Register cell classes
         // self.collectionView!.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "dayCell")
@@ -52,13 +35,10 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         // Do any additional setup after loading the view.
     }
     
-     func viewWillAppear() {
-        super.viewWillAppear(true)
-      
-  
-    }
+     //func viewWillAppear() {
+        //super.viewWillAppear(<#T##Bool#>)
+     //}
 
-    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -90,16 +70,41 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
 
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier:"dayCell", for: indexPath) as! CalendarCollectionCell
         
+        selectedDateComponents = currentCalendar.dateComponents([.hour,.day,.month,.year,.weekday], from: selectedDate)
         
+        print("SelectedDate: \(selectedDate)")
+        print("selectedDateComponents: \(selectedDateComponents)")
         
+        //make selected day 1st of month
+        selectedDateComponents.day = 1
+        //to avoid that automatic conversion to UTC causes go back to previous Date
+        selectedDateComponents.hour = 12
+        
+        print("selectedDateComponents1st: \(selectedDateComponents)")
+        
+        //index of 1st day of month in collectionview. It depends on represented 1st weekday (Sunday in US)
+        indexOfSelected1st = selectedDateComponents.weekday! - currentCalendar.firstWeekday
+        //for months starting on first cell (day 1), shift down to show one day from previous month
+        indexOfSelected1st = (indexOfSelected1st < 1) ? indexOfSelected1st + 7 : indexOfSelected1st
+        
+        print("indexOfSelected1st: \(indexOfSelected1st)")
+        
+        //clear weekday of selected
+        selectedDateComponents.weekday = nil
+        
+        firstDateOfSelected = currentCalendar.date(from:selectedDateComponents)!
+        
+        print("firstDateOfSelected: \(firstDateOfSelected)")
+    
         //number of days relative to 1st of month
         dayDiff = indexPath.item - indexOfSelected1st
             print("dayDiff: \(dayDiff)")
         
         //Date of cell to be painted according to dayDiff
-        let cellDate = Date (timeInterval:oneDay*Double(dayDiff), since:firstDayOfSelected)
+        let cellDate = Date (timeInterval:oneDay*Double(dayDiff), since:firstDateOfSelected)
             print("cellDate: \(cellDate)")
         //remake components for cell date
         var cellDateComponents = currentCalendar.dateComponents([.day, .month, .year, .weekday, .weekOfMonth, .weekOfYear], from: cellDate)
@@ -112,6 +117,7 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         
         return cell
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
@@ -134,8 +140,6 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
             let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
                                                             withReuseIdentifier:"headerView",
                                                             for: indexPath) as! CollectionHeaderReusableView
-            
-            
             //header.monthLBL.text = "\((currentDateComponents.month?.description)!)"
             
             formatter.dateFormat = "MMMM yyyy"
@@ -143,13 +147,14 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
             
             return header
             
-        case UICollectionElementKindSectionFooter:
             
+        case UICollectionElementKindSectionFooter:
             
             let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
                                                             withReuseIdentifier:"footerView",
                                                             for: indexPath) as! CollectionFooterReusableView
             return footer
+            
             
         default:
             
@@ -157,10 +162,55 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         }
     }
     
-    func nextMonth() {
+    @IBAction func nextMonth(_ sender: UIButton) {
         
-        firstDayOfSelectedComponents.month! += 1
-        self.collectionView?.reloadData()
+        print("next")
+        print("selectedDate: \(selectedDate)")
+        print("selectedDateComponents: \(selectedDateComponents)")
+       
+        
+        if (selectedDateComponents.month! < 12) {
+            
+            selectedDateComponents.month! += 1
+            
+        }else{
+            
+            selectedDateComponents.month = 1
+            selectedDateComponents.year! += 1
+        }
+        
+        print("selectedDateComponents: \(selectedDateComponents)")
+        
+        selectedDate = currentCalendar.date(from:selectedDateComponents)!
+        
+        print("selectedDate: \(selectedDate)")
+        self.CollecionViewOT!.reloadData()
+        
+    }
+    
+
+    @IBAction func pastMonth(_ sender: UIButton) {
+        
+        print("past")
+        print("selectedDate: \(selectedDate)")
+        print("selectedDateComponents: \(selectedDateComponents)")
+        
+        if (selectedDateComponents.month! > 1) {
+            
+            selectedDateComponents.month! -= 1
+        }else{
+            
+            selectedDateComponents.month = 12
+            selectedDateComponents.year! -= 1
+        }
+        
+        print("selectedDateComponents: \(selectedDateComponents)")
+        
+        selectedDate = currentCalendar.date(from:selectedDateComponents)!
+        
+        print("selectedDate: \(selectedDate)")
+        self.CollecionViewOT!.reloadData()
+    
     }
 
     // MARK: UICollectionViewDelegate

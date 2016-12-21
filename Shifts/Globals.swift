@@ -9,28 +9,20 @@
 import Foundation
 import UIKit
 
+let currentCalendar = Calendar.current
+
 let currentDate = Date()
 
-let currentDateComponents = currentCalendar.dateComponents([ .day, .month, .year, .weekday, .weekOfMonth, .weekOfYear], from: currentDate)
-
+let currentDateComponents = currentCalendar.dateComponents([.hour,.day,.month,.year,.weekday], from: currentDate)
 
 //let formatterMonthYear = DateFormatter()
 //formatterMonthYear.dateFormat = "MM.yy"
 let formatter = DateFormatter()
 
-let currentCalendar = Calendar.current
-
-
 let oneDay = TimeInterval(60 * 60 * 24)
 
 let darkerGrey  = UIColor(white: 0.4, alpha: 1)
 let lighterGrey = UIColor(white: 0.8, alpha: 1)
-
-
-
-
-
-
 
 
 

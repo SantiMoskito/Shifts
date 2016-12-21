@@ -283,6 +283,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = SPSPB8C673;
 				INFOPLIST_FILE = Shifts/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
@@ -298,6 +299,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = SPSPB8C673;
 				INFOPLIST_FILE = Shifts/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
