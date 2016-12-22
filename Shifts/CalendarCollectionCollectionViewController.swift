@@ -26,6 +26,15 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        let swipeRight = UISwipeGestureRecognizer(target:self, action:#selector(self.goPast))
+        swipeRight.direction = .right
+        CollecionViewOT.addGestureRecognizer(swipeRight)
+        
+        
+        let swipeLeft = UISwipeGestureRecognizer(target:self, action:#selector(self.goNext))
+        swipeLeft.direction = .left
+        CollecionViewOT.addGestureRecognizer(swipeLeft)
+        
         // Uncomment the following line to preserve selection between presentations
         self.clearsSelectionOnViewWillAppear = true
 
@@ -164,32 +173,41 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
     
     @IBAction func nextMonth(_ sender: UIButton) {
         
-        print("next")
-        print("selectedDate: \(selectedDate)")
-        print("selectedDateComponents: \(selectedDateComponents)")
-       
-        
-        if (selectedDateComponents.month! < 12) {
-            
-            selectedDateComponents.month! += 1
-            
-        }else{
-            
-            selectedDateComponents.month = 1
-            selectedDateComponents.year! += 1
-        }
-        
-        print("selectedDateComponents: \(selectedDateComponents)")
-        
-        selectedDate = currentCalendar.date(from:selectedDateComponents)!
-        
-        print("selectedDate: \(selectedDate)")
-        self.CollecionViewOT!.reloadData()
+        goNext()
         
     }
     
+    func goNext(){
+    
+            print("next")
+            print("selectedDate: \(selectedDate)")
+            print("selectedDateComponents: \(selectedDateComponents)")
+    
+        if (selectedDateComponents.month! < 12) {
+    
+            selectedDateComponents.month! += 1
+    
+        }else{
+    
+            selectedDateComponents.month = 1
+            selectedDateComponents.year! += 1
+        }
+    
+            print("selectedDateComponents: \(selectedDateComponents)")
+    
+    selectedDate = currentCalendar.date(from:selectedDateComponents)!
+    
+        print("selectedDate: \(selectedDate)")
+    self.CollecionViewOT!.reloadData()
+    
+    }
 
     @IBAction func pastMonth(_ sender: UIButton) {
+        
+        goPast()
+    }
+    
+    func goPast(){
         
         print("past")
         print("selectedDate: \(selectedDate)")
@@ -210,7 +228,7 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         
         print("selectedDate: \(selectedDate)")
         self.CollecionViewOT!.reloadData()
-    
+        
     }
 
     // MARK: UICollectionViewDelegate
