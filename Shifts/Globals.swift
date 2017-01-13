@@ -9,11 +9,16 @@
 import Foundation
 import UIKit
 
-let currentCalendar = Calendar.current
+var currentCalendar = Calendar.current
+
+////WARNING: REMOVE AFTER TESTING AND calendarCollectionViewContro
+let testLocale = Locale(identifier: "he_IL") //ja_JP en_US es_ES ar_SA ne he_IL zh zh_Hant
+let testCalendarIdentifier : Calendar.Identifier = .hebrew  //.japanese .gregorian .islamicUmmAlQura .buddhist .hebrew .chinese
+////
 
 let currentDate = Date()
 
-let currentDateComponents = currentCalendar.dateComponents([.hour,.day,.month,.year,.weekday], from: currentDate)
+var currentDateComponents = currentCalendar.dateComponents([.day,.month,.year,.weekday,.weekdayOrdinal], from: currentDate)
 
 //let formatterMonthYear = DateFormatter()
 //formatterMonthYear.dateFormat = "MM.yy"
@@ -23,6 +28,9 @@ let oneDay = TimeInterval(60 * 60 * 24)
 
 let darkerGrey  = UIColor(white: 0.4, alpha: 1)
 let lighterGrey = UIColor(white: 0.8, alpha: 1)
+let dayRed = #colorLiteral(red: 0.6038824556, green: 0.29627498, blue: 0.2957891252, alpha: 1)
+let almostBlack = #colorLiteral(red: 0.1704671637, green: 0.1704671637, blue: 0.1704671637, alpha: 1)
+let faintGrey = #colorLiteral(red: 0.963971288, green: 0.963971288, blue: 0.963971288, alpha: 1)
 
 
 

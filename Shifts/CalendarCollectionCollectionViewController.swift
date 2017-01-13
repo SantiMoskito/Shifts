@@ -18,22 +18,41 @@ var firstDateOfSelected = Date()
 var firstDateOfSelectedComponents = DateComponents()
 var indexOfSelected1st = 0
 
+let firstWeekday = currentCalendar.firstWeekday
+let veryShortWeekdaysArray = currentCalendar.veryShortWeekdaySymbols
+let numberOfWeekdays = veryShortWeekdaysArray.count
+
 
 class CalendarCollectionCollectionViewController: UICollectionViewController,UICollectionViewDelegateFlowLayout {
     
     @IBOutlet var CollecionViewOT: UICollectionView!
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        ////WARNING: REMOVE AFTER TESTING
+        currentCalendar = Calendar(identifier:testCalendarIdentifier)
+        currentCalendar.locale = testLocale
+        formatter.calendar = currentCalendar
+        formatter.locale = testLocale
+        ////
         
         let swipeRight = UISwipeGestureRecognizer(target:self, action:#selector(self.goPast))
         swipeRight.direction = .right
         CollecionViewOT.addGestureRecognizer(swipeRight)
         
-        
         let swipeLeft = UISwipeGestureRecognizer(target:self, action:#selector(self.goNext))
         swipeLeft.direction = .left
         CollecionViewOT.addGestureRecognizer(swipeLeft)
+        
+        let swipeDown = UISwipeGestureRecognizer(target:self, action:#selector(self.goPast))
+        swipeDown.direction = .down
+        CollecionViewOT.addGestureRecognizer(swipeDown)
+        
+        let swipeUp = UISwipeGestureRecognizer(target:self, action:#selector(self.goNext))
+        swipeUp.direction = .up
+        CollecionViewOT.addGestureRecognizer(swipeUp)
         
         // Uncomment the following line to preserve selection between presentations
         self.clearsSelectionOnViewWillAppear = true
@@ -82,31 +101,34 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier:"dayCell", for: indexPath) as! CalendarCollectionCell
         
-        selectedDateComponents = currentCalendar.dateComponents([.hour,.day,.month,.year,.weekday], from: selectedDate)
+        selectedDateComponents = currentCalendar.dateComponents([.hour,.day,.month,.year,.weekday,.weekdayOrdinal], from: selectedDate)
         
-        print("SelectedDate: \(selectedDate)")
-        print("selectedDateComponents: \(selectedDateComponents)")
+            print("SelectedDate: \(selectedDate)")
+            print("selectedDateComponents: \(selectedDateComponents)")
         
         //make selected day 1st of month
         selectedDateComponents.day = 1
         //to avoid that automatic conversion to UTC causes go back to previous Date
         selectedDateComponents.hour = 12
         
-        print("selectedDateComponents1st: \(selectedDateComponents)")
-        
-        //index of 1st day of month in collectionview. It depends on represented 1st weekday (Sunday in US)
-        indexOfSelected1st = selectedDateComponents.weekday! - currentCalendar.firstWeekday
-        //for months starting on first cell (day 1), shift down to show one day from previous month
-        indexOfSelected1st = (indexOfSelected1st < 1) ? indexOfSelected1st + 7 : indexOfSelected1st
-        
-        print("indexOfSelected1st: \(indexOfSelected1st)")
+            print("selectedDateComponents1st: \(selectedDateComponents)")
         
         //clear weekday of selected
-        selectedDateComponents.weekday = nil
+        //selectedDateComponents.weekday = nil
         
+        //create new date for 1st
         firstDateOfSelected = currentCalendar.date(from:selectedDateComponents)!
+        firstDateOfSelectedComponents = currentCalendar.dateComponents([.day,.month,.year,.weekday,.weekdayOrdinal], from: firstDateOfSelected)
         
-        print("firstDateOfSelected: \(firstDateOfSelected)")
+            print("firstDateOfSelected: \(firstDateOfSelected)")
+        
+        //index of 1st day of month in collectionview. It depends on represented 1st weekday (ex. Lunes in ES, Sunday in US)
+        indexOfSelected1st = (firstDateOfSelectedComponents.weekday! - currentCalendar.firstWeekday)
+        //for months starting on first cell (day 1), shift down to show one day from previous month
+        indexOfSelected1st = (indexOfSelected1st < 1) ? indexOfSelected1st + numberOfWeekdays : indexOfSelected1st
+        
+            print("SelectedWeekDay: firstWeekday: \(selectedDateComponents.weekday!) \(currentCalendar.firstWeekday)")
+            print("indexOfSelected1st: \(indexOfSelected1st)")
     
         //number of days relative to 1st of month
         dayDiff = indexPath.item - indexOfSelected1st
@@ -116,21 +138,41 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         let cellDate = Date (timeInterval:oneDay*Double(dayDiff), since:firstDateOfSelected)
             print("cellDate: \(cellDate)")
         //remake components for cell date
-        var cellDateComponents = currentCalendar.dateComponents([.day, .month, .year, .weekday, .weekOfMonth, .weekOfYear], from: cellDate)
+        var cellDateComponents = currentCalendar.dateComponents([.day, .month, .year, .weekday,.weekdayOrdinal], from: cellDate)
             print("cellDateComponents: \(cellDateComponents)")
         //MonthDay for cell
         cell.dayNumberLBL.text = "\(cellDateComponents.day!)"
         
+
+        
         //shadowed color of previous and next month
-        cell.dayNumberLBL.textColor = (selectedDateComponents.month==cellDateComponents.month) ? darkerGrey : lighterGrey
+
+        
+        //if current Day, highlighted. If other month, shadowed. If day Sat or Sun, dayRed
+        if (
+            (cellDateComponents == currentDateComponents)
+            //&& (cellDateComponents.month! == currentDateComponents.month!)
+            //&& (cellDateComponents.year! == currentDateComponents.year!)
+            //cellDate == currentDate
+           ){
+                cell.dayNumberLBL.textColor = .white
+                cell.dayBackgroundOT.backgroundColor = darkerGrey
+        }else{
+                cell.dayBackgroundOT.backgroundColor = .white
+                cell.dayNumberLBL.textColor = currentCalendar.isDateInWeekend(cellDate) ? dayRed : darkerGrey
+                cell.backgroundColor = (currentCalendar.isDateInWeekend(cellDate)) ? faintGrey : .white
+                cell.notasViewBackground.backgroundColor = (currentCalendar.isDateInWeekend(cellDate)) ? faintGrey : .white
+            
+                cell.shadowOT.isHidden = (selectedDateComponents.month!==cellDateComponents.month!) ? true : false
+        }
         
         return cell
     }
     
-    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-        let cellWidth = ( self.view.frame.width / 7 )
+        let floatNumberOfWeekdays = CGFloat(numberOfWeekdays)
+        let cellWidth = ( self.view.frame.width / floatNumberOfWeekdays )
         let cellHeight = cellWidth * 72 / 50
         let size = CGSize(width:cellWidth,height:cellHeight)
         
@@ -149,10 +191,65 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
             let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
                                                             withReuseIdentifier:"headerView",
                                                             for: indexPath) as! CollectionHeaderReusableView
-            //header.monthLBL.text = "\((currentDateComponents.month?.description)!)"
+           
+                print("currentDateComponentsH: \(currentDateComponents)")
             
             formatter.dateFormat = "MMMM yyyy"
             header.monthLBL.text = formatter.string(from: selectedDate).localizedUppercase
+            
+                print (currentCalendar)
+                print (currentCalendar.locale!)
+
+                print (currentCalendar.veryShortWeekdaySymbols)
+                print (firstWeekday)
+            
+            //1. Strange index to make it valid for all types of calendar, locales, and even numberOfWeekdays in that calendar.
+            header.Weekday1.text = veryShortWeekdaysArray[(0+firstWeekday-1)%numberOfWeekdays]
+            header.Weekday2.text = veryShortWeekdaysArray[(1+firstWeekday-1)%numberOfWeekdays]
+            header.Weekday3.text = veryShortWeekdaysArray[(2+firstWeekday-1)%numberOfWeekdays]
+            header.Weekday4.text = veryShortWeekdaysArray[(3+firstWeekday-1)%numberOfWeekdays]
+            header.Weekday5.text = veryShortWeekdaysArray[(4+firstWeekday-1)%numberOfWeekdays]
+            header.Weekday6.text = veryShortWeekdaysArray[(5+firstWeekday-1)%numberOfWeekdays]
+            header.Weekday7.text = veryShortWeekdaysArray[(6+firstWeekday-1)%numberOfWeekdays]
+            
+            
+            //Calculations to obtain weekend days and highlight them:
+            selectedDateComponents.day = nil
+            selectedDateComponents.weekdayOrdinal = 1
+            //starts asking for day in column 1  //MOD bacause if firstweekday is 2, 2+6 is out of range
+            selectedDateComponents.weekday = firstWeekday%numberOfWeekdays
+            let testWeekday1Date = currentCalendar.date(from: selectedDateComponents)
+                    print("===")
+                    print(selectedDateComponents)
+                    print(testWeekday1Date!)
+            selectedDateComponents.weekday = firstWeekday+5%numberOfWeekdays
+            let testWeekday6Date = currentCalendar.date(from: selectedDateComponents)
+                    print("===")
+                    print(selectedDateComponents)
+                    print(testWeekday6Date!)
+            selectedDateComponents.weekday = firstWeekday+6%numberOfWeekdays
+            let testWeekday7Date = currentCalendar.date(from: selectedDateComponents)
+                    print("===")
+                    print(selectedDateComponents)
+                    print(testWeekday7Date!)
+                    
+            let isWeekday1Weekend = currentCalendar.isDateInWeekend(testWeekday1Date!)
+                    print(isWeekday1Weekend)
+
+            let isWeekday6Weekend = currentCalendar.isDateInWeekend(testWeekday6Date!)
+                    print(isWeekday6Weekend)
+            
+            let isWeekday7Weekend = currentCalendar.isDateInWeekend(testWeekday7Date!)
+                    print(isWeekday7Weekend)
+            
+            header.Weekday1.textColor = (isWeekday1Weekend) ? dayRed : almostBlack
+            header.Weekday2.textColor = almostBlack
+            header.Weekday3.textColor = almostBlack
+            header.Weekday4.textColor = almostBlack
+            header.Weekday5.textColor = almostBlack
+            header.Weekday6.textColor = (isWeekday6Weekend) ? dayRed : almostBlack
+            header.Weekday7.textColor = (isWeekday7Weekend) ? dayRed : almostBlack
+            
             
             return header
             
@@ -162,6 +259,44 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
             let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
                                                             withReuseIdentifier:"footerView",
                                                             for: indexPath) as! CollectionFooterReusableView
+            
+            //1. Strange index to make it valid for all types of calendar, locales, and even numberOfWeekdays in that calendar.
+            footer.Weekday1.text = veryShortWeekdaysArray[(0+firstWeekday-1)%numberOfWeekdays]
+            footer.Weekday2.text = veryShortWeekdaysArray[(1+firstWeekday-1)%numberOfWeekdays]
+            footer.Weekday3.text = veryShortWeekdaysArray[(2+firstWeekday-1)%numberOfWeekdays]
+            footer.Weekday4.text = veryShortWeekdaysArray[(3+firstWeekday-1)%numberOfWeekdays]
+            footer.Weekday5.text = veryShortWeekdaysArray[(4+firstWeekday-1)%numberOfWeekdays]
+            footer.Weekday6.text = veryShortWeekdaysArray[(5+firstWeekday-1)%numberOfWeekdays]
+            footer.Weekday7.text = veryShortWeekdaysArray[(6+firstWeekday-1)%numberOfWeekdays]
+            
+            
+            //Calculations to obtain weekend days and highlight them:
+            selectedDateComponents.day = nil
+            selectedDateComponents.weekdayOrdinal = 1
+            //starts asking for day in column 1  //MOD bacause if firstweekday is 2, 2+6 is out of range
+            selectedDateComponents.weekday = firstWeekday%numberOfWeekdays
+            let testWeekday1Date = currentCalendar.date(from: selectedDateComponents)
+
+            selectedDateComponents.weekday = firstWeekday+5%numberOfWeekdays
+            let testWeekday6Date = currentCalendar.date(from: selectedDateComponents)
+
+            selectedDateComponents.weekday = firstWeekday+6%numberOfWeekdays
+            let testWeekday7Date = currentCalendar.date(from: selectedDateComponents)
+            
+            let isWeekday1Weekend = currentCalendar.isDateInWeekend(testWeekday1Date!)
+
+            let isWeekday6Weekend = currentCalendar.isDateInWeekend(testWeekday6Date!)
+            
+            let isWeekday7Weekend = currentCalendar.isDateInWeekend(testWeekday7Date!)
+            
+            footer.Weekday1.textColor = (isWeekday1Weekend) ? dayRed : almostBlack
+            footer.Weekday2.textColor = almostBlack
+            footer.Weekday3.textColor = almostBlack
+            footer.Weekday4.textColor = almostBlack
+            footer.Weekday5.textColor = almostBlack
+            footer.Weekday6.textColor = (isWeekday6Weekend) ? dayRed : almostBlack
+            footer.Weekday7.textColor = (isWeekday7Weekend) ? dayRed : almostBlack
+            
             return footer
             
             
@@ -171,14 +306,14 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         }
     }
     
+    
     @IBAction func nextMonth(_ sender: UIButton) {
         
         goNext()
-        
     }
     
-    func goNext(){
     
+    func goNext(){
             print("next")
             print("selectedDate: \(selectedDate)")
             print("selectedDateComponents: \(selectedDateComponents)")
@@ -192,7 +327,6 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
             selectedDateComponents.month = 1
             selectedDateComponents.year! += 1
         }
-    
             print("selectedDateComponents: \(selectedDateComponents)")
     
     selectedDate = currentCalendar.date(from:selectedDateComponents)!
@@ -202,10 +336,12 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
     
     }
 
+    
     @IBAction func pastMonth(_ sender: UIButton) {
         
         goPast()
     }
+    
     
     func goPast(){
         
