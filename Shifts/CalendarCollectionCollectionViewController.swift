@@ -18,6 +18,8 @@ var firstDateOfSelected = Date()
 var firstDateOfSelectedComponents = DateComponents()
 var indexOfSelected1st = 0
 
+var shiftDateComponents = DateComponents()
+
 let firstWeekday = currentCalendar.firstWeekday
 let veryShortWeekdaysArray = currentCalendar.veryShortWeekdaySymbols
 let numberOfWeekdays = veryShortWeekdaysArray.count
@@ -92,10 +94,11 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
 
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of items
-        return 42
+        // number of items even for calendars with weeks different than 7 days
+        return numberOfWeekdays*6
     }
 
+// MARK: Collection Day Cell Presentation
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
@@ -103,15 +106,15 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         
         selectedDateComponents = currentCalendar.dateComponents([.hour,.day,.month,.year,.weekday,.weekdayOrdinal], from: selectedDate)
         
-            print("SelectedDate: \(selectedDate)")
-            print("selectedDateComponents: \(selectedDateComponents)")
+                            print("SelectedDate: \(selectedDate)")
+                            print("selectedDateComponents: \(selectedDateComponents)")
         
         //make selected day 1st of month
         selectedDateComponents.day = 1
-        //to avoid that automatic conversion to UTC causes go back to previous Date
+        //to avoid automatic conversion to UTC causing to go back to previous Date
         selectedDateComponents.hour = 12
         
-            print("selectedDateComponents1st: \(selectedDateComponents)")
+                            print("selectedDateComponents1st: \(selectedDateComponents)")
         
         //clear weekday of selected
         //selectedDateComponents.weekday = nil
@@ -120,26 +123,28 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         firstDateOfSelected = currentCalendar.date(from:selectedDateComponents)!
         firstDateOfSelectedComponents = currentCalendar.dateComponents([.day,.month,.year,.weekday,.weekdayOrdinal], from: firstDateOfSelected)
         
-            print("firstDateOfSelected: \(firstDateOfSelected)")
+                            print("firstDateOfSelected: \(firstDateOfSelected)")
         
         //index of 1st day of month in collectionview. It depends on represented 1st weekday (ex. Lunes in ES, Sunday in US)
         indexOfSelected1st = (firstDateOfSelectedComponents.weekday! - currentCalendar.firstWeekday)
         //for months starting on first cell (day 1), shift down to show one day from previous month
         indexOfSelected1st = (indexOfSelected1st < 1) ? indexOfSelected1st + numberOfWeekdays : indexOfSelected1st
         
-            print("SelectedWeekDay: firstWeekday: \(selectedDateComponents.weekday!) \(currentCalendar.firstWeekday)")
-            print("indexOfSelected1st: \(indexOfSelected1st)")
+                            print("SelectedWeekDay: firstWeekday: \(selectedDateComponents.weekday!) \(currentCalendar.firstWeekday)")
+                            print("indexOfSelected1st: \(indexOfSelected1st)")
     
         //number of days relative to 1st of month
         dayDiff = indexPath.item - indexOfSelected1st
-            print("dayDiff: \(dayDiff)")
+                            print("dayDiff: \(dayDiff)")
         
         //Date of cell to be painted according to dayDiff
         let cellDate = Date (timeInterval:oneDay*Double(dayDiff), since:firstDateOfSelected)
-            print("cellDate: \(cellDate)")
+                            print("cellDate: \(cellDate)")
+        
         //remake components for cell date
         var cellDateComponents = currentCalendar.dateComponents([.day, .month, .year, .weekday,.weekdayOrdinal], from: cellDate)
-            print("cellDateComponents: \(cellDateComponents)")
+                            print("cellDateComponents: \(cellDateComponents)")
+        
         //MonthDay for cell
         cell.dayNumberLBL.text = "\(cellDateComponents.day!)"
         
@@ -157,6 +162,7 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
            ){
                 cell.dayNumberLBL.textColor = .white
                 cell.dayBackgroundOT.backgroundColor = darkerGrey
+                cell.backgroundColor = (currentCalendar.isDateInWeekend(cellDate)) ? faintGrey : .white
         }else{
                 cell.dayBackgroundOT.backgroundColor = .white
                 cell.dayNumberLBL.textColor = currentCalendar.isDateInWeekend(cellDate) ? dayRed : darkerGrey
@@ -165,6 +171,40 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
             
                 cell.shadowOT.isHidden = (selectedDateComponents.month!==cellDateComponents.month!) ? true : false
         }
+        
+        ////Warning: Random notes mark for now (testing UI)
+        //TODO: Get from DB
+        let randomNotasTxt:UInt32 = arc4random_uniform(100)
+        let randomNotasHrs:UInt32 = arc4random_uniform(100)
+        let randomNotasChg:UInt32 = arc4random_uniform(100)
+        cell.notaTxtOT.isHidden = (randomNotasTxt > 70) ? false : true
+        cell.notaHrsOT.isHidden = (randomNotasHrs > 70) ? false : true
+        cell.notaChgOT.isHidden = (randomNotasChg > 60) ? false : true
+        ////
+        
+        
+        //Personalized color of day ring according to ShiftType (Morning, Afternoon, Night, Free, Holiday....)
+        ////WARNING: [[Test Code. Forced colors as of now to test auto shift prediction
+        let todayShift = getShift(shiftDate: cellDate)
+        
+        switch todayShift {
+            
+        case .day :
+            cell.dayRingOT.backgroundColor = testBlueDayColor
+        case .afternoon :
+            cell.dayRingOT.backgroundColor = testBlueAfternoonColor
+        case .night :
+            cell.dayRingOT.backgroundColor = testBlueNightColor
+        case .free :
+            cell.dayRingOT.backgroundColor = testGreenFreeColor
+        case .holiday :
+            cell.dayRingOT.backgroundColor = testGreenHolidayColor
+
+        default:
+            cell.dayRingOT.backgroundColor = testGreenDefaultColor
+        }
+        /////WARNING: Test Code ]]
+        
         
         return cell
     }
@@ -179,7 +219,7 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         return size
     }
     
-    
+// MARK: Header/Footer Weekdays
     override func collectionView(_ collectionView: UICollectionView,
                                  viewForSupplementaryElementOfKind kind: String,
                                  at indexPath: IndexPath) -> UICollectionReusableView {
@@ -192,18 +232,18 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
                                                             withReuseIdentifier:"headerView",
                                                             for: indexPath) as! CollectionHeaderReusableView
            
-                print("currentDateComponentsH: \(currentDateComponents)")
+                                print("currentDateComponentsH: \(currentDateComponents)")
             
             formatter.dateFormat = "MMMM yyyy"
             header.monthLBL.text = formatter.string(from: selectedDate).localizedUppercase
             
-                print (currentCalendar)
-                print (currentCalendar.locale!)
+                                print(currentCalendar)
+                                print(currentCalendar.locale!)
 
-                print (currentCalendar.veryShortWeekdaySymbols)
-                print (firstWeekday)
+                                print(currentCalendar.veryShortWeekdaySymbols)
+                                print(firstWeekday)
             
-            //1. Strange index to make it valid for all types of calendar, locales, and even numberOfWeekdays in that calendar.
+            //Strange index use to make it valid for all types of calendar, locales, and even numberOfWeekdays in that calendar.
             header.Weekday1.text = veryShortWeekdaysArray[(0+firstWeekday-1)%numberOfWeekdays]
             header.Weekday2.text = veryShortWeekdaysArray[(1+firstWeekday-1)%numberOfWeekdays]
             header.Weekday3.text = veryShortWeekdaysArray[(2+firstWeekday-1)%numberOfWeekdays]
@@ -214,33 +254,35 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
             
             
             //Calculations to obtain weekend days and highlight them:
+            
+            //clear weekday of selected
             selectedDateComponents.day = nil
             selectedDateComponents.weekdayOrdinal = 1
             //starts asking for day in column 1  //MOD bacause if firstweekday is 2, 2+6 is out of range
             selectedDateComponents.weekday = firstWeekday%numberOfWeekdays
             let testWeekday1Date = currentCalendar.date(from: selectedDateComponents)
-                    print("===")
-                    print(selectedDateComponents)
-                    print(testWeekday1Date!)
+                                    print("===")
+                                    print(selectedDateComponents)
+                                    print(testWeekday1Date!)
             selectedDateComponents.weekday = firstWeekday+5%numberOfWeekdays
             let testWeekday6Date = currentCalendar.date(from: selectedDateComponents)
-                    print("===")
-                    print(selectedDateComponents)
-                    print(testWeekday6Date!)
+                                    print("===")
+                                    print(selectedDateComponents)
+                                    print(testWeekday6Date!)
             selectedDateComponents.weekday = firstWeekday+6%numberOfWeekdays
             let testWeekday7Date = currentCalendar.date(from: selectedDateComponents)
-                    print("===")
-                    print(selectedDateComponents)
-                    print(testWeekday7Date!)
+                                    print("===")
+                                    print(selectedDateComponents)
+                                    print(testWeekday7Date!)
                     
             let isWeekday1Weekend = currentCalendar.isDateInWeekend(testWeekday1Date!)
-                    print(isWeekday1Weekend)
+                                    print(isWeekday1Weekend)
 
             let isWeekday6Weekend = currentCalendar.isDateInWeekend(testWeekday6Date!)
-                    print(isWeekday6Weekend)
+                                    print(isWeekday6Weekend)
             
             let isWeekday7Weekend = currentCalendar.isDateInWeekend(testWeekday7Date!)
-                    print(isWeekday7Weekend)
+                                    print(isWeekday7Weekend)
             
             header.Weekday1.textColor = (isWeekday1Weekend) ? dayRed : almostBlack
             header.Weekday2.textColor = almostBlack
@@ -260,7 +302,7 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
                                                             withReuseIdentifier:"footerView",
                                                             for: indexPath) as! CollectionFooterReusableView
             
-            //1. Strange index to make it valid for all types of calendar, locales, and even numberOfWeekdays in that calendar.
+            //Strange index use to make it valid for all universl types of calendar, locales, and even numberOfWeekdays not equal to 7 in that calendar.
             footer.Weekday1.text = veryShortWeekdaysArray[(0+firstWeekday-1)%numberOfWeekdays]
             footer.Weekday2.text = veryShortWeekdaysArray[(1+firstWeekday-1)%numberOfWeekdays]
             footer.Weekday3.text = veryShortWeekdaysArray[(2+firstWeekday-1)%numberOfWeekdays]
@@ -271,6 +313,8 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
             
             
             //Calculations to obtain weekend days and highlight them:
+            
+            //clear weekday of selected
             selectedDateComponents.day = nil
             selectedDateComponents.weekdayOrdinal = 1
             //starts asking for day in column 1  //MOD bacause if firstweekday is 2, 2+6 is out of range
@@ -306,6 +350,8 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         }
     }
     
+
+// MARK: Navigation Actions
     
     @IBAction func nextMonth(_ sender: UIButton) {
         
@@ -314,9 +360,9 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
     
     
     func goNext(){
-            print("next")
-            print("selectedDate: \(selectedDate)")
-            print("selectedDateComponents: \(selectedDateComponents)")
+                            print("next")
+                            print("selectedDate: \(selectedDate)")
+                            print("selectedDateComponents: \(selectedDateComponents)")
     
         if (selectedDateComponents.month! < 12) {
     
@@ -327,7 +373,7 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
             selectedDateComponents.month = 1
             selectedDateComponents.year! += 1
         }
-            print("selectedDateComponents: \(selectedDateComponents)")
+                            print("selectedDateComponents: \(selectedDateComponents)")
     
     selectedDate = currentCalendar.date(from:selectedDateComponents)!
     
@@ -365,6 +411,33 @@ class CalendarCollectionCollectionViewController: UICollectionViewController,UIC
         print("selectedDate: \(selectedDate)")
         self.CollecionViewOT!.reloadData()
         
+    }
+    
+    // MARK: Functionality
+    
+    func getShift(shiftDate: Date) -> Shift {
+    ////TODO: Get Actual Shift from DB, for now it is fixed for testing
+        shiftDateComponents = currentCalendar.dateComponents([.day,.month,.year,.weekday,.weekdayOrdinal], from: shiftDate)
+        let mod = shiftDateComponents.day!%16
+        switch mod {
+        case 1...3:
+            return Shift.day
+        case 4...5:
+            return Shift.night
+        case 6...7:
+            return Shift.free
+        case 9...11:
+            return Shift.afternoon
+        case 12...13:
+            return Shift.night
+        case 14...15:
+            return Shift.free
+        case 8,16:
+            return Shift.holiday
+        default:
+            return Shift.holiday
+        }
+       
     }
 
     // MARK: UICollectionViewDelegate
